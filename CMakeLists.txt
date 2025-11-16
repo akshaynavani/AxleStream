@@ -33,6 +33,9 @@ set(AXLE_CORE_SOURCES
   src/sources/vehicle_model.cpp
   src/sources/sim_lidar.cpp
   src/sources/sim_imu_can.cpp
+  src/io/log_codec.cpp
+  src/io/log_writer.cpp
+  src/io/log_reader.cpp
 )
 
 add_library(axle_core ${AXLE_CORE_SOURCES})
