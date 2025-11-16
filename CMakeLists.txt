@@ -33,6 +33,7 @@ set(AXLE_CORE_SOURCES
   src/sources/vehicle_model.cpp
   src/sources/sim_lidar.cpp
   src/sources/sim_imu_can.cpp
+  src/sources/socketcan_source.cpp
   src/io/log_codec.cpp
   src/io/log_writer.cpp
   src/io/log_reader.cpp
@@ -41,6 +42,14 @@ set(AXLE_CORE_SOURCES
 add_library(axle_core ${AXLE_CORE_SOURCES})
 target_include_directories(axle_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(axle_core PUBLIC Threads::Threads PRIVATE axle_warnings)
+
+if(AXLE_WITH_SOCKETCAN)
+  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(WARNING "AXLE_WITH_SOCKETCAN requested on ${CMAKE_SYSTEM_NAME}; SocketCAN is Linux-only, disabling")
+  else()
+    target_compile_definitions(axle_core PUBLIC AXLE_WITH_SOCKETCAN=1)
+  endif()
+endif()
 
 if(AXLE_BUILD_TESTS)
   enable_testing()
