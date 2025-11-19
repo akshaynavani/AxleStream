@@ -13,6 +13,8 @@ include(GoogleTest)
 set(AXLE_TEST_SOURCES
   test_spsc_queue.cpp
   test_latency.cpp
+  test_log_format.cpp
+  test_sim_sources.cpp
 )
 
 add_executable(axle_tests ${AXLE_TEST_SOURCES})
