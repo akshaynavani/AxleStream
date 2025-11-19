@@ -41,7 +41,7 @@ public:
         double cruise_mps = 15.0;      // ~54 km/h
         double wheelbase_m = 2.8;
         double steering_ratio = 15.0;
-        double max_steer_wheel_deg = 90.0;
+        double max_steer_wheel_deg = 30.0;
         double steer_period_s = 20.0;
         double duration_s = 600.0;     // precomputed horizon; queries beyond it wrap
         double step_s = 0.001;
