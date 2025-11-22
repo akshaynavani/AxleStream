@@ -15,6 +15,7 @@ public:
     ~SocketCanSource() override;
 
     std::string name() const override { return "socketcan:" + ifname_; }
+    std::uint8_t kinds() const override { return kCanMask; }
     void run(const std::atomic<bool>& stop, const SensorSinks& sinks) override;
 
     static bool available() noexcept;

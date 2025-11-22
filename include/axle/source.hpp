@@ -18,6 +18,15 @@ struct SensorSinks {
     std::function<bool(CanFrame&&)> can;
 };
 
+/// Bitmask of sensor kinds a source produces. The pipeline uses it to guarantee that every
+/// per-kind SPSC queue has exactly one producer thread.
+enum KindMask : std::uint8_t {
+    kLidarMask = 1u << 0,
+    kImuMask = 1u << 1,
+    kCanMask = 1u << 2,
+    kAllKinds = kLidarMask | kImuMask | kCanMask,
+};
+
 struct SourceStats {
     std::atomic<std::uint64_t> produced{0};
     std::atomic<std::uint64_t> dropped{0};
@@ -30,6 +39,7 @@ public:
     virtual ~Source() = default;
     virtual std::string name() const = 0;
     virtual void run(const std::atomic<bool>& stop, const SensorSinks& sinks) = 0;
+    virtual std::uint8_t kinds() const { return kAllKinds; }
 
     const SourceStats& stats() const noexcept { return stats_; }
 

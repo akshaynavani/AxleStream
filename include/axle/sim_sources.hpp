@@ -42,6 +42,7 @@ class SimLidarSource final : public Source {
 public:
     SimLidarSource(std::shared_ptr<const VehicleModel> model, SimConfig cfg);
     std::string name() const override { return "sim-lidar"; }
+    std::uint8_t kinds() const override { return kLidarMask; }
     void run(const std::atomic<bool>& stop, const SensorSinks& sinks) override;
 
     /// Generate the sweep for a given simulation time (exposed for tests/benchmarks).
@@ -57,6 +58,7 @@ class SimImuSource final : public Source {
 public:
     SimImuSource(std::shared_ptr<const VehicleModel> model, SimConfig cfg);
     std::string name() const override { return "sim-imu"; }
+    std::uint8_t kinds() const override { return kImuMask; }
     void run(const std::atomic<bool>& stop, const SensorSinks& sinks) override;
 
 private:
@@ -68,6 +70,7 @@ class SimCanSource final : public Source {
 public:
     SimCanSource(std::shared_ptr<const VehicleModel> model, SimConfig cfg);
     std::string name() const override { return "sim-can"; }
+    std::uint8_t kinds() const override { return kCanMask; }
     void run(const std::atomic<bool>& stop, const SensorSinks& sinks) override;
 
 private:
