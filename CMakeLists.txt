@@ -43,6 +43,7 @@ set(AXLE_CORE_SOURCES
   src/processing/imu_filter.cpp
   src/processing/can_decoder.cpp
   src/processing/fusion.cpp
+  src/pipeline/pipeline.cpp
 )
 
 add_library(axle_core ${AXLE_CORE_SOURCES})
