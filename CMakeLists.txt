@@ -37,6 +37,7 @@ set(AXLE_CORE_SOURCES
   src/io/log_codec.cpp
   src/io/log_writer.cpp
   src/io/log_reader.cpp
+  src/io/jsonl_exporter.cpp
   src/processing/lidar_processor.cpp
   src/processing/imu_filter.cpp
   src/processing/can_decoder.cpp
