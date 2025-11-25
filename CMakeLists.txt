@@ -30,6 +30,7 @@ endif()
 
 set(AXLE_CORE_SOURCES
   src/core/latency.cpp
+  src/core/thread_util.cpp
   src/sources/vehicle_model.cpp
   src/sources/sim_lidar.cpp
   src/sources/sim_imu_can.cpp
