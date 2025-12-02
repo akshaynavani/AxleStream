@@ -42,6 +42,7 @@ Pipeline::Pipeline(PipelineConfig cfg, std::vector<SourcePtr> sources, std::uniq
         }
         claimed = static_cast<std::uint8_t>(claimed | s->kinds());
     }
+    has_lidar_ = (claimed & kLidarMask) != 0;
 }
 
 Pipeline::~Pipeline() {
@@ -248,7 +249,8 @@ void Pipeline::fusion_stage() {
 
         // While LiDAR results may still arrive, states wait in their queues for the next
         // sweep. Once the LiDAR stage has finished, drain them freely so upstream can exit.
-        const bool lidar_finished = lidar_done_.load(std::memory_order_acquire) && result_q_.empty_approx();
+        const bool lidar_finished =
+            !has_lidar_ || (lidar_done_.load(std::memory_order_acquire) && result_q_.empty_approx());
         if (lidar_finished && drain_states(false, 0)) {
             backoff.reset();
             continue;

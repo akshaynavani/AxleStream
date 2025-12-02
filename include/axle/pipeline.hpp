@@ -108,6 +108,8 @@ private:
     SpscQueue<VehicleState> veh_state_q_;
     SpscQueue<ExportItem> export_q_;
 
+    bool has_lidar_{false};  // without a LiDAR producer, states are drained immediately
+
     std::atomic<bool> stop_{false};
     std::atomic<bool> abort_{false};
     std::atomic<int> sources_running_{0};
