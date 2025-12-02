@@ -109,6 +109,8 @@ private:
     SpscQueue<ExportItem> export_q_;
 
     bool has_lidar_{false};  // without a LiDAR producer, states are drained immediately
+    bool has_imu_{false};
+    bool has_can_{false};
 
     std::atomic<bool> stop_{false};
     std::atomic<bool> abort_{false};

@@ -1,6 +1,7 @@
 #include "axle/pipeline.hpp"
 
 #include <cstdio>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 
@@ -14,6 +15,9 @@ namespace {
 // States up to this far beyond a LiDAR timestamp are admitted before fusing it, so the
 // "closest" match can be slightly newer than the sweep.
 constexpr Nanos kFusionLookahead = ms_to_ns(5.0);
+// In lossless (backpressure) mode the fusion stage waits at most this long for the IMU/CAN
+// streams to catch up with a LiDAR sweep before fusing with whatever it has.
+constexpr Nanos kMaxAlignWait = ms_to_ns(200.0);
 
 inline std::uint64_t load(const std::atomic<std::uint64_t>& a) { return a.load(std::memory_order_relaxed); }
 inline void bump(std::atomic<std::uint64_t>& a, std::uint64_t n = 1) { a.fetch_add(n, std::memory_order_relaxed); }
@@ -43,6 +47,8 @@ Pipeline::Pipeline(PipelineConfig cfg, std::vector<SourcePtr> sources, std::uniq
         claimed = static_cast<std::uint8_t>(claimed | s->kinds());
     }
     has_lidar_ = (claimed & kLidarMask) != 0;
+    has_imu_ = (claimed & kImuMask) != 0;
+    has_can_ = (claimed & kCanMask) != 0;
 }
 
 Pipeline::~Pipeline() {
@@ -203,6 +209,8 @@ void Pipeline::fusion_stage() {
     Fusion fusion;
     Backoff backoff(cfg_.spin_before_yield);
     std::optional<LidarResult> pending;
+    Nanos last_imu_ts = std::numeric_limits<Nanos>::min();
+    Nanos last_veh_ts = std::numeric_limits<Nanos>::min();
 
     // Feed states into the fusion history. With a LiDAR result pending only states up to
     // its timestamp (+ lookahead) are taken, keeping the join time-aligned even when the
@@ -213,12 +221,14 @@ void Pipeline::fusion_stage() {
         while (ImuState* s = imu_state_q_.front()) {
             if (bounded && s->sensor_ts_ns > horizon) break;
             fusion.on_imu(*s);
+            last_imu_ts = s->sensor_ts_ns;
             imu_state_q_.try_pop();
             any = true;
         }
         while (VehicleState* v = veh_state_q_.front()) {
             if (bounded && v->sensor_ts_ns > horizon) break;
             fusion.on_vehicle(*v);
+            last_veh_ts = v->sensor_ts_ns;
             veh_state_q_.try_pop();
             any = true;
         }
@@ -230,7 +240,24 @@ void Pipeline::fusion_stage() {
 
         if (pending) {
             backoff.reset();
-            drain_states(true, pending->sensor_ts_ns + kFusionLookahead);
+            const Nanos target = pending->sensor_ts_ns;
+            drain_states(true, target + kFusionLookahead);
+            if (cfg_.backpressure) {
+                // Offline runs: the state streams may lag the LiDAR stream, so wait until each
+                // has reached the sweep time (or finished) to make the join deterministic.
+                // A state still queued after a bounded drain is newer than the horizon, so
+                // its presence also means the stream has caught up.
+                const Nanos wait_start = now_ns();
+                for (;;) {
+                    const bool imu_ok = !has_imu_ || last_imu_ts >= target || imu_state_q_.front() ||
+                                        imu_done_.load(std::memory_order_acquire);
+                    const bool veh_ok = !has_can_ || last_veh_ts >= target || veh_state_q_.front() ||
+                                        can_done_.load(std::memory_order_acquire);
+                    if ((imu_ok && veh_ok) || now_ns() - wait_start > kMaxAlignWait) break;
+                    cpu_relax();
+                    drain_states(true, target + kFusionLookahead);
+                }
+            }
             FusedFrame fused = fusion.fuse(std::move(*pending));
             pending.reset();
 
