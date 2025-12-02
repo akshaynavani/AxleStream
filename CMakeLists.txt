@@ -58,6 +58,11 @@ if(AXLE_WITH_SOCKETCAN)
   endif()
 endif()
 
+add_executable(axlestream src/app/main.cpp)
+target_link_libraries(axlestream PRIVATE axle_core axle_warnings)
+
+install(TARGETS axlestream RUNTIME DESTINATION bin)
+
 if(AXLE_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
