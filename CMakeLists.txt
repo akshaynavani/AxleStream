@@ -61,7 +61,10 @@ endif()
 add_executable(axlestream src/app/main.cpp)
 target_link_libraries(axlestream PRIVATE axle_core axle_warnings)
 
-install(TARGETS axlestream RUNTIME DESTINATION bin)
+add_executable(axle_bench src/app/bench.cpp)
+target_link_libraries(axle_bench PRIVATE axle_core axle_warnings)
+
+install(TARGETS axlestream axle_bench RUNTIME DESTINATION bin)
 
 if(AXLE_BUILD_TESTS)
   enable_testing()
