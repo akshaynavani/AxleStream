@@ -16,6 +16,7 @@ set(AXLE_TEST_SOURCES
   test_log_format.cpp
   test_sim_sources.cpp
   test_processing.cpp
+  test_pipeline.cpp
 )
 
 add_executable(axle_tests ${AXLE_TEST_SOURCES})
