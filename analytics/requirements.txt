@@ -1,0 +1,8 @@
+# Runtime (Databricks clusters already ship pyspark + delta; these are for local runs)
+pyspark==3.5.1
+delta-spark==3.2.0
+requests==2.32.3
+python-dotenv==1.0.1
+
+# Tests
+pytest==8.2.2
