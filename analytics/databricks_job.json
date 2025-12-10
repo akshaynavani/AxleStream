@@ -1,0 +1,60 @@
+{
+  "name": "axlestream-fleet-diagnostics",
+  "description": "Ingest AxleStream telemetry from the raw volume and rebuild fleet diagnostics tables.",
+  "max_concurrent_runs": 1,
+  "schedule": {
+    "quartz_cron_expression": "0 0 * * * ?",
+    "timezone_id": "UTC",
+    "pause_status": "PAUSED"
+  },
+  "job_clusters": [
+    {
+      "job_cluster_key": "axle_cluster",
+      "new_cluster": {
+        "spark_version": "15.4.x-scala2.12",
+        "node_type_id": "Standard_D4ds_v5",
+        "num_workers": 2,
+        "data_security_mode": "SINGLE_USER",
+        "spark_env_vars": {
+          "AXLE_CATALOG": "main",
+          "AXLE_SCHEMA": "axlestream",
+          "AXLE_VOLUME": "raw_telemetry",
+          "AXLE_LATENCY_BUDGET_MS": "10"
+        }
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "task_key": "bronze_ingest",
+      "job_cluster_key": "axle_cluster",
+      "spark_python_task": {
+        "python_file": "analytics/jobs/bronze_ingest.py",
+        "source": "GIT"
+      }
+    },
+    {
+      "task_key": "silver_frames",
+      "depends_on": [{ "task_key": "bronze_ingest" }],
+      "job_cluster_key": "axle_cluster",
+      "spark_python_task": {
+        "python_file": "analytics/jobs/silver_frames.py",
+        "source": "GIT"
+      }
+    },
+    {
+      "task_key": "gold_fleet_diagnostics",
+      "depends_on": [{ "task_key": "silver_frames" }],
+      "job_cluster_key": "axle_cluster",
+      "spark_python_task": {
+        "python_file": "analytics/jobs/gold_fleet_diagnostics.py",
+        "source": "GIT"
+      }
+    }
+  ],
+  "git_source": {
+    "git_url": "https://github.com/akshaynavani/AxleStream",
+    "git_provider": "gitHub",
+    "git_branch": "main"
+  }
+}
