@@ -22,7 +22,7 @@ public:
 
 private:
     std::string ifname_;
-    int fd_{-1};
+    [[maybe_unused]] int fd_{-1};  // unused when SocketCAN is compiled out
 };
 
 }  // namespace axle
