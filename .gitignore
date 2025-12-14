@@ -1,0 +1,41 @@
+# Build output
+build/
+build-*/
+cmake-build-*/
+out/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+Testing/
+*.o
+*.a
+*.so
+*.dylib
+
+# Pipeline output and recordings
+telemetry_out/
+analytics_out/
+*.axl
+*.jsonl
+*.inprogress
+.uploaded.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Secrets
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
